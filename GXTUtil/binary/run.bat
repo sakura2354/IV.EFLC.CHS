@@ -1,4 +1,0 @@
-GXTUtil IV.EN.gxt IV.CHS.txt
-GXTUtil EFLC.EN.gxt EFLC.CHS.txt
-GXTUtil TBOGT.EN.gxt TBOGT.CHS.txt
-GXTUtil TLAD.EN.gxt TLAD.CHS.txt

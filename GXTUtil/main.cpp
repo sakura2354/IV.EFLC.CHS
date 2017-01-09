@@ -1,15 +1,4 @@
 ﻿#include "IVGXT.h"
-#include "print.hpp"
-
-//GXTUtil input output
-//GXTUtil IV.EN.gxt IV.CHS.txt
-//GXTUtil IV.CHS.txt IV.CHS.gxt
-
-// IV.CHS.gxt
-// EFLC.CHS.gxt
-// TLAD.CHS.gxt
-// TBOGT.CHS.gxt
-//
 
 int main(int argc, char **argv)
 {
@@ -21,8 +10,15 @@ int main(int argc, char **argv)
 	}
 	else if (argc == 2)
 	{
-
+		inst.gxt2txt(argv[1]);
 	}
+	else
+	{
+		inst.txt2gxt("GTA4TEST.txt", "chinese.gxt");
+	}
+
+	inst.generate_collection("CHINESECHARACTERS.txt");
+	inst.generate_table("table.dat");
 
 	return 0;
 }

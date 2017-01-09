@@ -243,3 +243,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/GXTUtil/chinese.gxt
+/GXTUtil/table.dat
+/GXTUtil/GTA4TEST.txt
+/GXTUtil/CHINESECHARACTERS.txt

@@ -26,5 +26,5 @@ class uint32_hex
 
 public:
 	static bool from_hex(const std::array<char, 11> &hex, std::uint32_t &result);
-	static bool to_hex(std::uint32_t value, std::array<char, 11> &result);
+	static void to_hex(std::uint32_t value, std::array<char, 11> &result);
 };

@@ -1,7 +1,7 @@
 ﻿#include "IVGXT.h"
 #include "uint32_hex.h"
-#include "print.hpp"
-#include "CBinaryStream.hpp"
+#include "binary_stream.hpp"
+#include "CHS3500.h"
 
 #include <cstring>
 #include <iostream>
@@ -10,6 +10,8 @@
 #include <locale>
 #include <codecvt>
 #include <algorithm>
+#include <iterator>
+#include <memory>
 
 bool IVGXT::table_sort::operator()(const std::array<char, 8> &lhs, const std::array<char, 8> &rhs) const
 {
@@ -103,21 +105,20 @@ void IVGXT::load_text(const std::string &text_path)
 			hash_string.fill(0);
 			std::copy(match_result[1].first, match_result[1].second, hash_string.begin());
 
-			if (uint32_hex::from_hex(hash_string, hash))
+			uint32_hex::from_hex(hash_string, hash);
+
+			normal_text.assign(match_result[2].first, match_result[2].second);
+
+			to_wide(normal_text, widen_text);
+
+			collect_wide_chars(widen_text);
+
+			auto resultib = table_iter->second.insert(std::make_pair(hash, std::make_pair(normal_text, widen_text)));
+
+			if (!resultib.second)
 			{
-				normal_text.assign(match_result[2].first, match_result[2].second);
-
-				normal_text.push_back(0);
-
-				to_wide(normal_text, widen_text);
-
-				collect_wide_chars(widen_text);
-
-				table_iter->second.insert(std::make_pair(hash, std::make_pair(normal_text, widen_text)));
-			}
-			else
-			{
-				return;
+				resultib.first->second.first = normal_text;
+				resultib.first->second.second = widen_text;
 			}
 		}
 		else if (std::regex_match(line_buffer, match_result, table_format))
@@ -133,6 +134,8 @@ void IVGXT::load_text(const std::string &text_path)
 			return;
 		}
 	}
+
+	m_collection.insert(std::begin(MostUsed3500), std::end(MostUsed3500) - 1);
 }
 
 void IVGXT::load_binary(const std::string &binary_path)
@@ -165,7 +168,7 @@ void IVGXT::load_binary(const std::string &binary_path)
 	{
 		binary_stream.seekg(12 + table_index * 12);
 		binary_stream.read(temp_tabl);
-		std::copy(std::begin(temp_tabl.name), std::end(temp_tabl.name), temp_table.first.begin());
+		std::copy_n(temp_tabl.name, 8, temp_table.first.begin());
 
 		binary_stream.seekg(temp_tabl.offset);
 
@@ -188,33 +191,36 @@ void IVGXT::load_binary(const std::string &binary_path)
 			binary_stream.seekg(offset_of_beginning_of_data + temp_tkey.offset);
 
 			read_c_wstring(binary_stream, wide_text);
-			std::replace(wide_text.begin(), wide_text.end(), 0x85, 0x20);
+
+			transform_characters(wide_text);
 
 			to_narrow(wide_text, narrow_text);
 
 			temp_table.second.insert(std::make_pair(temp_tkey.hash, std::make_pair(narrow_text, wide_text)));
 		}
 
-		m_data.insert(temp_table);
+		m_data.insert(std::move(temp_table));
 		temp_table.second.clear();
 	}
 }
 
-void IVGXT::generate_text(const std::string &text_path)
+void IVGXT::generate_text()
 {
 	std::array<char, 11> hex_string;
 
-	std::ofstream text_stream(text_path, std::ios_base::trunc);
-
-	if (!text_stream)
-	{
-		return;
-	}
-
-	add_utf8_signature(text_stream);
+	std::ofstream text_stream;
 
 	for (auto &table : m_data)
 	{
+		text_stream.open(std::string(table.first.data()) + ".txt", std::ios_base::trunc);
+
+		if (!text_stream)
+		{
+			return;
+		}
+
+		add_utf8_signature(text_stream);
+
 		text_stream << '[' << table.first.data() << ']' << '\n';
 
 		for (auto &entry : table.second)
@@ -222,8 +228,10 @@ void IVGXT::generate_text(const std::string &text_path)
 			uint32_hex::to_hex(entry.first, hex_string);
 
 			text_stream << ';' << hex_string.data() << '=' << entry.second.first << '\n';
-			text_stream << hex_string.data() << '=' << entry.second.first << '\n' << '\n';
+			text_stream << hex_string.data() << '=' << entry.second.first << '\n';
 		}
+
+		text_stream.close();
 	}
 }
 
@@ -281,7 +289,9 @@ void IVGXT::generate_binary(const std::string &binary_path)
 			binary_stream.write(entry.first);
 			foKeyBlock += 8;
 			binary_stream.seekp(foDataBlock);
+			std::replace(entry.second.second.begin(), entry.second.second.end(), 0x2122, 0x99);
 			binary_stream.write_container(entry.second.second);
+			binary_stream.write(0ui16);
 			foDataBlock = binary_stream.tellp();
 		}
 
@@ -293,7 +303,6 @@ void IVGXT::generate_binary(const std::string &binary_path)
 void IVGXT::to_wide(const std::string &input, std::wstring &output)
 {
 	output = std::wstring_convert<std::codecvt_utf8<wchar_t> >().from_bytes(input);
-	output.push_back(0);
 }
 
 void IVGXT::to_narrow(const std::wstring &input, std::string &output)
@@ -341,10 +350,10 @@ void IVGXT::txt2gxt(const std::string &input_path, const std::string &output_pat
 	generate_binary(output_path);
 }
 
-void IVGXT::gxt2txt(const std::string &input_path, const std::string &output_path)
+void IVGXT::gxt2txt(const std::string &input_path)
 {
 	load_binary(input_path);
-	generate_text(output_path);
+	generate_text();
 }
 
 void IVGXT::process(const std::string &input_path, const std::string &output_path)
@@ -360,11 +369,7 @@ void IVGXT::process(const std::string &input_path, const std::string &output_pat
 	}
 	else if (is_input_binary && is_output_text)
 	{
-		gxt2txt(input_path, output_path);
-	}
-	else
-	{
-		print_to_cout("本工具只能 gxt<-->txt");
+		gxt2txt(input_path);
 	}
 }
 
@@ -385,12 +390,132 @@ void IVGXT::read_c_wstring(CBinaryStream &binary_stream, std::wstring &output)
 
 void IVGXT::collect_wide_chars(const std::wstring &wide_text)
 {
-	for (auto wchar : wide_text)
+	for (wchar_t wchar : wide_text)
 	{
-		if (wchar > 0xFF)
+		if (wchar < 0x80 ||
+			wchar == 0xA9 ||
+			wchar == 0xAC ||
+			wchar == 0xAE ||
+			wchar == 0xC1 ||
+			wchar == 0xC9 ||
+			wchar == 0xD6 ||
+			wchar == 0xDC ||
+			wchar == 0xE0 ||
+			wchar == 0xE1 ||
+			wchar == 0xE7 ||
+			wchar == 0xE8 ||
+			wchar == 0xE9 ||
+			wchar == 0xEA ||
+			wchar == 0xED ||
+			wchar == 0xEF ||
+			wchar == 0xF1 ||
+			wchar == 0xF3 ||
+			wchar == 0xF5 ||
+			wchar == 0xFA ||
+			wchar == 0xFC ||
+			wchar == 0x2122)
 		{
-			m_collection.insert(wchar);
+			return;
+		}
+
+		m_collection.insert(wchar);
+	}
+}
+
+void IVGXT::transform_characters(std::wstring &input)
+{
+	//bad character in IV stock text: 0x85 0x92 0x94 0x96 0x97 0xA0
+	//bad character in EFLC stock text: 0x93
+	//™: 0x99 - 0x2122
+	for (wchar_t &character : input)
+	{
+		switch (character)
+		{
+		case 0x85:
+		case 0x92:
+		case 0x93:
+		case 0x94:
+		case 0x96:
+		case 0x97:
+		case 0xA0:
+			character = 0x20;
+			break;
+
+		case 0x99:
+			character = 0x2122;
+			break;
+
+		default:
+			break;
 		}
 	}
 }
 
+void IVGXT::generate_collection(const std::string &collection_path)
+{
+	CBinaryStream output_stream(collection_path, std::ios::binary | std::ios::out);
+
+	if (!output_stream)
+	{
+		return;
+	}
+
+	unsigned char curcolumn = 0;
+
+	output_stream.write(0xFEFFui16);
+
+	for (wchar_t character : this->m_collection)
+	{
+		output_stream.write(character);
+
+		curcolumn += 1;
+
+		if (curcolumn > 62)
+		{
+			output_stream.write(L'\n');
+
+			curcolumn = 0;
+		}
+	}
+}
+
+void IVGXT::generate_table(const std::string &table_path)
+{
+	struct CharPos
+	{
+		unsigned char row, column;
+	};
+
+	unsigned char currow = 0;
+	unsigned char curcolumn = 0;
+
+	CBinaryStream output_stream(table_path, std::ios::binary | std::ios::out);
+
+	if (!output_stream)
+	{
+		return;
+	}
+
+	std::unique_ptr<std::array<CharPos, 0x10000>> pTable = std::make_unique<std::array<CharPos, 0x10000>>();
+
+	pTable->fill(CharPos{ 63,63 });
+
+	for (wchar_t character : this->m_collection)
+	{
+		pTable->data()[character].row = currow;
+		pTable->data()[character].column = curcolumn;
+
+		if (curcolumn < 63)
+		{
+			++curcolumn;
+		}
+		else
+		{
+			++currow;
+
+			curcolumn = 0;
+		}
+	}
+
+	output_stream.write_container(*pTable);
+}

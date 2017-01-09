@@ -95,7 +95,7 @@ bool uint32_hex::from_hex(const std::array<char, 11> &hex, std::uint32_t &result
 
 }
 
-bool uint32_hex::to_hex(std::uint32_t value, std::array<char, 11> &result)
+void uint32_hex::to_hex(std::uint32_t value, std::array<char, 11> &result)
 {
 	std::array<char, 11> temp;
 	__helper helper;
@@ -106,21 +106,14 @@ bool uint32_hex::to_hex(std::uint32_t value, std::array<char, 11> &result)
 
 	helper.whole = value;
 
-	if (value_to_digit(helper.splited.bits_0_3, temp[9]) &&
-		value_to_digit(helper.splited.bits_4_7, temp[8]) &&
-		value_to_digit(helper.splited.bits_8_11, temp[7]) &&
-		value_to_digit(helper.splited.bits_12_15, temp[6]) &&
-		value_to_digit(helper.splited.bits_16_19, temp[5]) &&
-		value_to_digit(helper.splited.bits_20_23, temp[4]) &&
-		value_to_digit(helper.splited.bits_24_27, temp[3]) &&
-		value_to_digit(helper.splited.bits_28_31, temp[2]))
-	{
-		result = temp;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-
+	value_to_digit(helper.splited.bits_0_3, temp[9]);
+	value_to_digit(helper.splited.bits_4_7, temp[8]);
+	value_to_digit(helper.splited.bits_8_11, temp[7]);
+	value_to_digit(helper.splited.bits_12_15, temp[6]);
+	value_to_digit(helper.splited.bits_16_19, temp[5]);
+	value_to_digit(helper.splited.bits_20_23, temp[4]);
+	value_to_digit(helper.splited.bits_24_27, temp[3]);
+	value_to_digit(helper.splited.bits_28_31, temp[2]);
+	
+	result = temp;
 }

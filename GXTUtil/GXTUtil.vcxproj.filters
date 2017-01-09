@@ -24,6 +24,9 @@
     <ClCompile Include="uint32_hex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CHS3500.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IVGXT.h">
@@ -32,11 +35,14 @@
     <ClInclude Include="uint32_hex.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="print.hpp">
+    <ClInclude Include="binary_stream.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CBinaryStream.hpp">
+    <ClInclude Include="CHS3500.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="GTA4TEST.txt" />
   </ItemGroup>
 </Project>

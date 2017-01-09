@@ -37,11 +37,12 @@ public:
 	static bool has_ext_gxt(const std::string &name);
 
 	void txt2gxt(const std::string &input_path, const std::string &output_path);
-	void gxt2txt(const std::string &input_path, const std::string &output_path);
+	void gxt2txt(const std::string &input_path);
 
 	void load_text(const std::string &text_path);
 	void load_binary(const std::string &binary_path);
-
+	
+	void generate_text();
 	void generate_text(const std::string &text_path);
 	void generate_binary(const std::string &binary_path);
 	void generate_collection(const std::string &collection_path);
@@ -52,6 +53,8 @@ public:
 private:
 	std::map<std::array<char, 8>, std::map<std::uint32_t, std::pair<std::string, std::wstring> >, table_sort> m_data;
 	std::set<wchar_t> m_collection;
+
+	static void transform_characters(std::wstring &input);
 
 	static void to_wide(const std::string &input, std::wstring &output);
 	static void to_narrow(const std::wstring &input, std::string &output);

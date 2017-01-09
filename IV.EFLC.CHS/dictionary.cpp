@@ -4,7 +4,7 @@
 
 namespace Dictionary
 {
-	void * GetElementByKey(void *pDictionary, unsigned int hash)
+	void *GetElementByKey(void *pDictionary, unsigned int hash)
 	{
 		return injector::thiscall<void *(void *, unsigned int)>::call(plugin::AddressByVersion(0x43A490), pDictionary, hash);
 	}

@@ -162,7 +162,6 @@
     <ClInclude Include="font.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="hash.h" />
-    <ClInclude Include="hooks.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="table.h" />
   </ItemGroup>

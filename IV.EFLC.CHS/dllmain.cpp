@@ -1,7 +1,5 @@
 ﻿#include <windows.h>
 #include "plugin.h"
-#include <Shlwapi.h>
-#pragma comment(lib, "Shlwapi.lib")
 
 #pragma comment(linker, "/EXPORT:_BinkSetMemory@8=binkw32o._BinkSetMemory@8")
 #pragma comment(linker, "/EXPORT:_BinkOpen@8=binkw32o._BinkOpen@8")

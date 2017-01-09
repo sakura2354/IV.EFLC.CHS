@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #define VALIDATE_SIZE(expr, size, hint) static_assert(sizeof(expr) == size, hint);
 
 class CFontStringProcess;
@@ -107,23 +105,23 @@ public:
 };
 VALIDATE_SIZE(CFontRenderState, 0x38, "hehe")
 
-class CFont
+namespace Font
 {
-public:
-	static bool IsNaiveCharacter(wchar_t);
+	bool IsNaiveCharacter(wchar_t);
 
-	static unsigned char GetRenderIndex();
+	unsigned char GetRenderIndex();
 
-	static float GetCharacterSizeNormalDispatch(wchar_t);
-	static float GetCHSCharacterSizeNormal();
+	float GetCharacterSizeNormalDispatch(wchar_t);
+	float GetCHSCharacterSizeNormal();
 
-	static float GetCharacterSizeDrawingDispatch(wchar_t, bool);
-	static float GetCHSCharacterDrawing(bool);
+	float GetCharacterSizeDrawingDispatch(wchar_t, bool);
+	float GetCHSCharacterDrawing(bool);
 
-	static wchar_t *SkipAWord(wchar_t *);
+	wchar_t *SkipAWord(wchar_t *);
 
-	static void PrintCharDispatch(float, float, wchar_t, int);
-	static void PrintCHSChar(float, float, wchar_t);
+	void PrintCharDispatch(float, float, wchar_t, int);
+	void PrintCHSChar(float, float, wchar_t);
 
-	static void *__fastcall LoadTextureCB(void *, int, unsigned int);
-};
+	void *__fastcall LoadTextureCB(void *, int, unsigned int);
+	void GetStringWidthHook();
+}

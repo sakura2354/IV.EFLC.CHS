@@ -7,166 +7,211 @@
 #include "deps/injector/calling.hpp"
 #include <cstring>
 
-static const float fChsWidth = 28.0f;
-static const float fTextureResolution = 4096.0f;
-static const float fSpriteSize = 64.0f;
-
-static CFontDetails *pDetails = plugin::AddressByVersion(0x11F5BC8);
-static CFontRenderState *pRenderState = plugin::AddressByVersion(0xF38114);
-static CFontInfo *pFonts= plugin::AddressByVersion(0x11EC930);
-static float *pFontResX= plugin::AddressByVersion(0xF3814C);
-
-static void *pTexture;
-
-unsigned char CFont::GetRenderIndex()
+namespace Font
 {
-	return injector::cstd<unsigned char()>::call(plugin::AddressByVersion(0x8840B0));
-}
+	static const float fChsWidth = 28.0f;
+	static const float fTextureResolution = 4096.0f;
+	static const float fSpriteSize = 64.0f;
 
-bool CFont::IsNaiveCharacter(wchar_t character)
-{
-	return (
-		character < 0x80 ||
-		character == 0xA9 ||
-		character == 0xAC ||
-		character == 0xAE ||
-		character == 0xC1 ||
-		character == 0xC9 ||
-		character == 0xD6 ||
-		character == 0xDC ||
-		character == 0xE0 ||
-		character == 0xE1 ||
-		character == 0xE7 ||
-		character == 0xE8 ||
-		character == 0xE9 ||
-		character == 0xEA ||
-		character == 0xED ||
-		character == 0xEF ||
-		character == 0xF1 ||
-		character == 0xF3 ||
-		character == 0xF5 ||
-		character == 0xFA ||
-		character == 0xFC ||
-		character == 0x99);
-}
+	static CFontDetails *pDetails = plugin::AddressByVersion(0x11F5BC8);
+	static CFontRenderState *pRenderState = plugin::AddressByVersion(0xF38114);
+	static CFontInfo *pFonts = plugin::AddressByVersion(0x11EC930);
+	static float *pFontResX = plugin::AddressByVersion(0xF3814C);
 
-void * CFont::LoadTextureCB(void *pDictionary, int, unsigned int hash)
-{
-	void *result = Dictionary::GetElementByKey(pDictionary, hash);
+	static void *pTexture;
 
-	pTexture = Dictionary::GetElementByKey(pDictionary, Hash::HashStringFromSeediCase("chs"));
-
-	return result;
-}
-
-wchar_t *CFont::SkipAWord(wchar_t *text)
-{
-	if (!text)
+	unsigned char GetRenderIndex()
 	{
-		return text;
+		return injector::cstd<unsigned char()>::call(plugin::AddressByVersion(0x8840B0));
 	}
 
-	wchar_t *begin = text;
-	wchar_t *current = text;
-
-	while (true)
+	bool IsNaiveCharacter(wchar_t character)
 	{
-		wchar_t character = *current;
+		return (
+			character < 0x80 ||
+			character == 0xA9 ||
+			character == 0xAC ||
+			character == 0xAE ||
+			character == 0xC1 ||
+			character == 0xC9 ||
+			character == 0xD6 ||
+			character == 0xDC ||
+			character == 0xE0 ||
+			character == 0xE1 ||
+			character == 0xE7 ||
+			character == 0xE8 ||
+			character == 0xE9 ||
+			character == 0xEA ||
+			character == 0xED ||
+			character == 0xEF ||
+			character == 0xF1 ||
+			character == 0xF3 ||
+			character == 0xF5 ||
+			character == 0xFA ||
+			character == 0xFC ||
+			character == 0x99);
+	}
 
-		if (character == ' ' || character == '~' || character == 0)
+	void *__fastcall LoadTextureCB(void *pDictionary, int, unsigned int hash)
+	{
+		void *result = Dictionary::GetElementByKey(pDictionary, hash);
+
+		pTexture = Dictionary::GetElementByKey(pDictionary, Hash::HashStringFromSeediCase("chs"));
+
+		return result;
+	}
+
+	wchar_t *SkipAWord(wchar_t *text)
+	{
+		if (!text)
 		{
-			break;
+			return text;
 		}
 
-		if (!IsNaiveCharacter(character))
+		wchar_t *begin = text;
+		wchar_t *current = text;
+
+		while (true)
 		{
-			if (current == begin)
+			wchar_t character = *current;
+
+			if (character == ' ' || character == '~' || character == 0)
+			{
+				break;
+			}
+
+			if (!IsNaiveCharacter(character))
+			{
+				if (current == begin)
+				{
+					++current;
+				}
+
+				break;
+			}
+			else
 			{
 				++current;
 			}
-			
-			break;
+		}
+
+		return current;
+	}
+	float GetCHSCharacterSizeNormal()
+	{
+		unsigned char index = GetRenderIndex();
+
+		float extrawidth = pFonts[pDetails[index].nFont].fWidthOfSpaceBetweenChars[pDetails[index].nExtraWidthIndex];
+
+		return (((fChsWidth + extrawidth) / *pFontResX + pDetails[index].fEdgeSize2) * pDetails[index].fScaleX);
+	}
+
+	float GetCharacterSizeNormalDispatch(wchar_t character)
+	{
+		if (IsNaiveCharacter(character + 0x20))
+		{
+			return injector::cstd<float(wchar_t)>::call(plugin::AddressByVersion(0x884110), character);
 		}
 		else
 		{
-			++current;
+			return GetCHSCharacterSizeNormal();
 		}
 	}
 
-	return current;
-}
-float CFont::GetCHSCharacterSizeNormal()
-{
-	unsigned char index = GetRenderIndex();
-
-	float extrawidth = pFonts[pDetails[index].nFont].fWidthOfSpaceBetweenChars[pDetails[index].nExtraWidthIndex];
-
-	return (((fChsWidth + extrawidth) / *pFontResX + pDetails[index].fEdgeSize2) * pDetails[index].fScaleX);
-}
-
-float CFont::GetCharacterSizeNormalDispatch(wchar_t character)
-{
-	if (IsNaiveCharacter(character + 0x20))
+	float GetCHSCharacterDrawing(bool useextrawidth)
 	{
-		return injector::cstd<float(wchar_t)>::call(plugin::AddressByVersion(0x884110), character);
-	}
-	else
-	{
-		return GetCHSCharacterSizeNormal();
-	}
-}
+		float extrawidth = useextrawidth ? pFonts[pRenderState->nFont].fWidthOfSpaceBetweenChars[pRenderState->nExtraWidthIndex] : 0.0f;
 
-float CFont::GetCHSCharacterDrawing(bool useextrawidth)
-{
-	unsigned char index = GetRenderIndex();
-
-	float extrawidth = useextrawidth ? pFonts[pRenderState->nFont].fWidthOfSpaceBetweenChars[pRenderState->nExtraWidthIndex] : 0.0f;
-
-	return (((fChsWidth + useextrawidth) / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
-}
-
-float CFont::GetCharacterSizeDrawingDispatch(wchar_t character, bool useextrawidth)
-{
-	if (IsNaiveCharacter(character + 0x20))
-	{
-		return injector::cstd<float(wchar_t, bool)>::call(plugin::AddressByVersion(0x874040), character, useextrawidth);
-	}
-	else
-	{
-		return GetCHSCharacterDrawing(useextrawidth);
-	}
-}
-
-void CFont::PrintCHSChar(float posx, float posy, wchar_t character)
-{
-	rageRect screenrect, texturerect;
-
-	if (posy < -0.06558f || posy > 1.0f)
-	{
-		return;
+		return (((fChsWidth + useextrawidth) / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
 	}
 
-	if (-(GetCHSCharacterDrawing(true) / pRenderState->fScaleX) > posx || posx > 1.0f)
+	float GetCharacterSizeDrawingDispatch(wchar_t character, bool useextrawidth)
 	{
-		return;
+		if (IsNaiveCharacter(character + 0x20))
+		{
+			return injector::cstd<float(wchar_t, bool)>::call(plugin::AddressByVersion(0x874040), character, useextrawidth);
+		}
+		else
+		{
+			return GetCHSCharacterDrawing(useextrawidth);
+		}
 	}
 
-	CharPos charpos = CTable::get(character);
-
-	float rawwidth = fChsWidth / fTextureResolution;
-	//8848ee
-	Game::SetRenderState(pTexture);
-	injector::cstd<void(rageRect*, rageRect*, rageRGBA, int)>::call(plugin::AddressByVersion(0x884300), &screenrect, &texturerect, pRenderState->field_18, 0);
-}
-
-void CFont::PrintCharDispatch(float posx, float posy, wchar_t character, int mode)
-{
-	if (IsNaiveCharacter(character + 0x20))
+	void PrintCHSChar(float posx, float posy, wchar_t character)
 	{
-		injector::cstd<void(float, float, wchar_t, int)>::call(plugin::AddressByVersion(0x8843E0), posx, posy, character, mode);
+		rageRect screenrect, texturerect;
+
+		if (posy < -0.06558f || posy > 1.0f)
+		{
+			return;
+		}
+
+		if (-(GetCHSCharacterDrawing(true) / pRenderState->fScaleX) > posx || posx > 1.0f)
+		{
+			return;
+		}
+
+		CharPos charpos = CTable::get(character);
+
+		float characterwidth = GetCHSCharacterDrawing(false);
+		float rawwidth = fChsWidth / fTextureResolution;
+
+		Game::SetRenderState(pTexture);
+		injector::cstd<void(rageRect*, rageRect*, rageRGBA, int)>::call(plugin::AddressByVersion(0x884300), &screenrect, &texturerect, pRenderState->field_18, 0);
 	}
-	else
+
+	void PrintCharDispatch(float posx, float posy, wchar_t character, int mode)
 	{
-		PrintCHSChar(posx, posy, character + 0x20);
+		if (IsNaiveCharacter(character + 0x20))
+		{
+			injector::cstd<void(float, float, wchar_t, int)>::call(plugin::AddressByVersion(0x8843E0), posx, posy, character, mode);
+		}
+		else
+		{
+			injector::cstd<void(float, float, wchar_t, int)>::call(plugin::AddressByVersion(0x8843E0), posx, posy, character, mode);
+			//PrintCHSChar(posx, posy, character + 0x20);
+		}
+	}
+
+	__declspec(naked) void GetStringWidthHook()
+	{
+		static void *retaddr;
+
+		__asm
+		{
+			pop retaddr;
+			movzx eax, word ptr[ebx];
+			mov cl, [esp + 0x10BC];
+			cmp ax, ' ';
+			jz space;
+			push eax;
+			call IsNaiveCharacter;
+			add esp, 4;
+			test al, al;
+			movzx eax, word ptr[ebx];
+			mov cl, [esp + 0x10BC];
+			jnz normal;
+			jmp chs;
+
+		space:
+			mov edx, retaddr;
+			add edx, 0xB;
+			jmp edx;
+
+		normal:
+			mov edx, retaddr;
+			add edx, 0x13;
+			jmp edx;
+
+		chs:
+			test cl, cl;
+			jnz normal;
+			mov dl, [esp + 0x13];
+			test dl, dl;
+			jz normal;
+			mov edx, retaddr;
+			add edx, 0x274;
+			jmp edx;
+		}
 	}
 }

@@ -50,9 +50,6 @@
     <ClInclude Include="table.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="hooks.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="dictionary.h">
       <Filter>头文件</Filter>
     </ClInclude>

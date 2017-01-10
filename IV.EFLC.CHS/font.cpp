@@ -9,9 +9,7 @@
 
 namespace Font
 {
-	static const float fChsWidth = 28.0f;
-	static const float fTextureResolution = 4096.0f;
-	static const float fSpriteSize = 64.0f;
+	static const float fChsWidth = 32.0f;
 
 	static CFontDetails *pDetails = plugin::AddressByVersion(0x11F5BC8);
 	static CFontRenderState *pRenderState = plugin::AddressByVersion(0xF38114);
@@ -101,9 +99,7 @@ namespace Font
 	{
 		unsigned char index = GetRenderIndex();
 
-		float extrawidth = pFonts[pDetails[index].nFont].fWidthOfSpaceBetweenChars[pDetails[index].nExtraWidthIndex];
-
-		return (((fChsWidth + extrawidth) / *pFontResX + pDetails[index].fEdgeSize2) * pDetails[index].fScaleX);
+		return ((fChsWidth / *pFontResX + pDetails[index].fEdgeSize2) * pDetails[index].fScaleX);
 	}
 
 	float GetCharacterSizeNormalDispatch(wchar_t character)
@@ -120,9 +116,7 @@ namespace Font
 
 	float GetCHSCharacterDrawing(bool useextrawidth)
 	{
-		float extrawidth = useextrawidth ? pFonts[pRenderState->nFont].fWidthOfSpaceBetweenChars[pRenderState->nExtraWidthIndex] : 0.0f;
-
-		return (((fChsWidth + useextrawidth) / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
+		return ((fChsWidth / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
 	}
 
 	float GetCharacterSizeDrawingDispatch(wchar_t character, bool useextrawidth)
@@ -139,6 +133,9 @@ namespace Font
 
 	void PrintCHSChar(float posx, float posy, wchar_t character)
 	{
+		static const float fTextureResolution = 4096.0f;
+		static const float fTextureRowsColumnsCount = 64.0f;
+
 		rageRect screenrect, texturerect;
 
 		if (posy < -0.06558f || posy > 1.0f)
@@ -154,7 +151,17 @@ namespace Font
 		CharPos charpos = CTable::get(character);
 
 		float characterwidth = GetCHSCharacterDrawing(false);
-		float rawwidth = fChsWidth / fTextureResolution;
+		float var_2C = pRenderState->fScaleY * 0.06558f;
+
+		screenrect.field_0 = posx;
+		screenrect.field_4 = posy + var_2C;
+		screenrect.field_8 = posx + characterwidth;
+		screenrect.field_C = posy;
+
+		texturerect.field_0 = charpos.column / fTextureRowsColumnsCount;
+		texturerect.field_4 = (charpos.row + 1) / fTextureRowsColumnsCount - 0.001f;
+		texturerect.field_8 = (charpos.column + 1) / fTextureRowsColumnsCount - 0.001f;
+		texturerect.field_C = charpos.row / fTextureRowsColumnsCount;
 
 		Game::SetRenderState(pTexture);
 		injector::cstd<void(rageRect*, rageRect*, rageRGBA, int)>::call(plugin::AddressByVersion(0x884300), &screenrect, &texturerect, pRenderState->field_18, 0);
@@ -162,14 +169,13 @@ namespace Font
 
 	void PrintCharDispatch(float posx, float posy, wchar_t character, int mode)
 	{
-		if (IsNaiveCharacter(character + 0x20))
+		if (pRenderState->TokenType != 0 || IsNaiveCharacter(character + 0x20))
 		{
 			injector::cstd<void(float, float, wchar_t, int)>::call(plugin::AddressByVersion(0x8843E0), posx, posy, character, mode);
 		}
 		else
 		{
-			injector::cstd<void(float, float, wchar_t, int)>::call(plugin::AddressByVersion(0x8843E0), posx, posy, character, mode);
-			//PrintCHSChar(posx, posy, character + 0x20);
+			PrintCHSChar(posx, posy, character + 0x20);
 		}
 	}
 

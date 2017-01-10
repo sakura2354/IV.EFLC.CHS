@@ -56,7 +56,7 @@ namespace plugin
 
 	void Patch()
 	{
-#if 0
+#if 1
 		injector::MakeCALL(AddressByVersion(0x88A690 + 0x100), Font::GetStringWidthHook);
 
 		injector::MakeJMP(AddressByVersion(0x8859E0), Font::SkipAWord);

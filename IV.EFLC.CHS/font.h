@@ -4,10 +4,7 @@
 
 class CFontStringProcess;
 
-struct rageRGBA
-{
-	unsigned char red, green, blue, alpha;
-};
+typedef unsigned int rageRGBA;
 
 struct rageRect
 {
@@ -99,7 +96,7 @@ public:
 	unsigned char nFont;
 	char pad1[2];
 	float fEdgeSize;
-	float field_30;
+	unsigned int TokenType;
 	bool field_34;
 	char pad2[3];
 };

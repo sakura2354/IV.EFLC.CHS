@@ -145,12 +145,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="binary_stream.hpp" />
-    <ClInclude Include="CHS3500.h" />
     <ClInclude Include="uint32_hex.h" />
     <ClInclude Include="IVGXT.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CHS3500.cpp" />
     <ClCompile Include="IVGXT.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="uint32_hex.cpp" />

@@ -11,6 +11,11 @@
 
 static char TablePath[MAX_PATH];
 
+static const char * __stdcall GetTextFileName(int)
+{
+	return "CHINESE.GXT";
+}
+
 namespace plugin
 {
 	GameVersion GetGameVersion()
@@ -74,11 +79,10 @@ namespace plugin
 		injector::MakeCALL(AddressByVersion(0x887642), Font::LoadTextureCB);
 		injector::MakeCALL(AddressByVersion(0x887CB6), Font::LoadTextureCB);
 
-		injector::WriteMemory(plugin::AddressByVersion(0x8A38B4), "CHINESE.GXT", true);
-		injector::WriteMemory(plugin::AddressByVersion(0x8A38DC), "CHINESE.GXT", true);
+		injector::MakeJMP(plugin::AddressByVersion(0x8A3880), GetTextFileName);
 
-		injector::WriteMemory(plugin::AddressByVersion(0x8874FC), "platform:/textures/fonts_cn", true);
-		injector::WriteMemory(plugin::AddressByVersion(0x887B73), "platform:/textures/fonts_cn", true);
+		injector::WriteMemory(plugin::AddressByVersion(0x8874FC), "platform:/textures/fonts_chs", true);
+		injector::WriteMemory(plugin::AddressByVersion(0x887B73), "platform:/textures/fonts_chs", true);
 #endif
 	}
 
@@ -93,4 +97,3 @@ namespace plugin
 		Patch();
 	}
 }
-

@@ -9,14 +9,14 @@
 
 namespace Font
 {
-	static const float fChsWidth = 32.0f;
+	static const float fChsWidth = 28.0f;
 
 	static CFontDetails *pDetails = plugin::AddressByVersion(0x11F5BC8);
 	static CFontRenderState *pRenderState = plugin::AddressByVersion(0xF38114);
 	static CFontInfo *pFonts = plugin::AddressByVersion(0x11EC930);
 	static float *pFontResX = plugin::AddressByVersion(0xF3814C);
 
-	static void *pTexture;
+	static void *pNormalTexture, *pBoldTexture;
 
 	unsigned char GetRenderIndex()
 	{
@@ -54,7 +54,8 @@ namespace Font
 	{
 		void *result = Dictionary::GetElementByKey(pDictionary, hash);
 
-		pTexture = Dictionary::GetElementByKey(pDictionary, Hash::HashStringFromSeediCase("chs"));
+		pBoldTexture = Dictionary::GetElementByKey(pDictionary, Hash::HashStringFromSeediCase("chs_bold"));
+		pNormalTexture = Dictionary::GetElementByKey(pDictionary, Hash::HashStringFromSeediCase("chs_normal"));
 
 		return result;
 	}
@@ -114,9 +115,16 @@ namespace Font
 		}
 	}
 
-	float GetCHSCharacterDrawing(bool useextrawidth)
+	float GetCHSCharacterSizeDrawing(bool useextrawidth)
 	{
-		return ((fChsWidth / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
+		float extrawidth = 0.0f;
+
+		if (useextrawidth)
+		{
+			extrawidth = 1.0f;
+		}
+
+		return (((fChsWidth + extrawidth) / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX);
 	}
 
 	float GetCharacterSizeDrawingDispatch(wchar_t character, bool useextrawidth)
@@ -127,14 +135,18 @@ namespace Font
 		}
 		else
 		{
-			return GetCHSCharacterDrawing(useextrawidth);
+			return GetCHSCharacterSizeDrawing(useextrawidth);
 		}
 	}
 
 	void PrintCHSChar(float posx, float posy, wchar_t character)
 	{
 		static const float fTextureResolution = 4096.0f;
-		static const float fTextureRowsColumnsCount = 64.0f;
+		static const float fTextureRowsCount = 102.4f;
+		static const float fTextureColumnsCount = 128.0f;
+		static const float fSpriteWidth = 32.0f;
+		static const float fSpriteHeight = 40.0f;
+		static const float fRatio = fTextureColumnsCount / 16.0f;
 
 		rageRect screenrect, texturerect;
 
@@ -143,28 +155,46 @@ namespace Font
 			return;
 		}
 
-		if (-(GetCHSCharacterDrawing(true) / pRenderState->fScaleX) > posx || posx > 1.0f)
+		if (-(GetCHSCharacterSizeDrawing(true) / pRenderState->fScaleX) > posx || posx > 1.0f)
 		{
 			return;
 		}
 
 		CharPos charpos = CTable::get(character);
 
-		float characterwidth = GetCHSCharacterDrawing(false);
+		float var_24 = fSpriteWidth / fTextureResolution;
+		float var_28 = (fSpriteWidth / *pFontResX + pRenderState->fEdgeSize) * pRenderState->fScaleX;
 		float var_2C = pRenderState->fScaleY * 0.06558f;
 
 		screenrect.field_0 = posx;
 		screenrect.field_4 = posy + var_2C;
-		screenrect.field_8 = posx + characterwidth;
+		screenrect.field_8 = posx + var_28;
 		screenrect.field_C = posy;
 
-		texturerect.field_0 = charpos.column / fTextureRowsColumnsCount;
-		texturerect.field_4 = (charpos.row + 1) / fTextureRowsColumnsCount - 0.001f;
-		texturerect.field_8 = (charpos.column + 1) / fTextureRowsColumnsCount - 0.001f;
-		texturerect.field_C = charpos.row / fTextureRowsColumnsCount;
+		texturerect.field_0 = charpos.column / fTextureColumnsCount;
+		texturerect.field_4 = ((charpos.row - 0.045f / fRatio) * fSpriteHeight + 39.5f) / fTextureResolution - 0.001f / fRatio + 0.0048f / fRatio;
+		texturerect.field_8 = charpos.column / fTextureColumnsCount + var_24;
+		texturerect.field_C = ((charpos.row - 0.045f / fRatio) * fSpriteHeight + 4.0f) / fTextureResolution;
 
-		Game::SetRenderState(pTexture);
-		injector::cstd<void(rageRect*, rageRect*, rageRGBA, int)>::call(plugin::AddressByVersion(0x884300), &screenrect, &texturerect, pRenderState->field_18, 0);
+		switch (pRenderState->nFont)
+		{
+		case 0:
+			Game::SetRenderState(pBoldTexture);
+			break;
+
+		case 1:
+			Game::SetRenderState(pBoldTexture);
+			break;
+
+		case 3:
+			Game::SetRenderState(pBoldTexture);
+			break;
+
+		default:
+			break;
+		}
+
+		injector::cstd<void(rageRect *, rageRect *, rageRGBA, int)>::call(plugin::AddressByVersion(0x884300), &screenrect, &texturerect, pRenderState->field_18, 0);
 	}
 
 	void PrintCharDispatch(float posx, float posy, wchar_t character, int mode)

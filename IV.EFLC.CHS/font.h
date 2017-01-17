@@ -112,7 +112,7 @@ namespace Font
 	float GetCHSCharacterSizeNormal();
 
 	float GetCharacterSizeDrawingDispatch(wchar_t, bool);
-	float GetCHSCharacterDrawing(bool);
+	float GetCHSCharacterDrawing();
 
 	wchar_t *SkipAWord(wchar_t *);
 

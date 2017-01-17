@@ -57,4 +57,7 @@
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="记录.txt" />
+  </ItemGroup>
 </Project>

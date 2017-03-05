@@ -32,11 +32,8 @@
     <ClInclude Include="uint32_hex.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="binary_stream.hpp">
+    <ClInclude Include="binary_fstream.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="GTA4TEST.txt" />
   </ItemGroup>
 </Project>

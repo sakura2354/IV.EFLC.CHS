@@ -1,6 +1,7 @@
 ﻿#include <windows.h>
 #include "plugin.h"
 
+#if 0
 #pragma comment(linker, "/EXPORT:_BinkSetMemory@8=binkw32o._BinkSetMemory@8")
 #pragma comment(linker, "/EXPORT:_BinkOpen@8=binkw32o._BinkOpen@8")
 #pragma comment(linker, "/EXPORT:_BinkClose@4=binkw32o._BinkClose@4")
@@ -17,6 +18,7 @@
 #pragma comment(linker, "/EXPORT:_BinkSetSoundSystem@8=binkw32o._BinkSetSoundSystem@8")
 #pragma comment(linker, "/EXPORT:_BinkGetSummary@8=binkw32o._BinkGetSummary@8")
 #pragma comment(linker, "/EXPORT:_BinkDoFrame@4=binkw32o._BinkDoFrame@4")
+#endif
 
 BOOL WINAPI DllMain(HMODULE module, DWORD reason, void *reserved)
 {

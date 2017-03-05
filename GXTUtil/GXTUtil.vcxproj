@@ -144,7 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="binary_stream.hpp" />
+    <ClInclude Include="binary_fstream.hpp" />
     <ClInclude Include="uint32_hex.h" />
     <ClInclude Include="IVGXT.h" />
   </ItemGroup>
@@ -152,9 +152,6 @@
     <ClCompile Include="IVGXT.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="uint32_hex.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="GTA4TEST.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

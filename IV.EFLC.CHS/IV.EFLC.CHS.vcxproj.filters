@@ -56,8 +56,8 @@
     <ClInclude Include="hash.h">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="记录.txt" />
+    <ClInclude Include="patch.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

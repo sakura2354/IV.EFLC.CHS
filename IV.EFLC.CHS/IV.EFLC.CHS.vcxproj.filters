@@ -56,8 +56,5 @@
     <ClInclude Include="hash.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="patch.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

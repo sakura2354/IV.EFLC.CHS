@@ -18,24 +18,24 @@ static const char * __stdcall GetTextFileName(int)
 
 namespace plugin
 {
-	GameVersion GetGameVersion()
+	eGameVersion GetGameVersion()
 	{
-		static GameVersion product = GameVersion::UNCHECKED;
+		static eGameVersion product = eGameVersion::UNCHECKED;
 
-		if (product == GameVersion::UNCHECKED)
+		if (product == eGameVersion::UNCHECKED)
 		{
 			switch (injector::ReadMemory<unsigned int>(injector::aslr_ptr(0x608C34).get(), true))
 			{
 			case 0x404B100F:
-				product = GameVersion::IV_1_0_8_0;
+				product = eGameVersion::IV_1_0_8_0;
 				break;
 
 			case 0x04C1F600:
-				product = GameVersion::EFLC_1_1_3_0;
+				product = eGameVersion::EFLC_1_1_3_0;
 				break;
 
 			default:
-				product = GameVersion::UNK;
+				product = eGameVersion::UNKNOWN;
 				break;
 			}
 		}
@@ -47,10 +47,10 @@ namespace plugin
 	{
 		switch (GetGameVersion())
 		{
-		case GameVersion::IV_1_0_8_0:
+		case eGameVersion::IV_1_0_8_0:
 			return injector::aslr_ptr(addressiv).get();
 
-		case GameVersion::EFLC_1_1_3_0:
+		case eGameVersion::EFLC_1_1_3_0:
 			return injector::aslr_ptr(addresseflc).get();
 
 		default:

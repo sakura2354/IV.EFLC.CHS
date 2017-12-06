@@ -96,6 +96,7 @@ namespace Font
 
 		return current;
 	}
+
 	float GetCHSCharacterSizeNormal()
 	{
 		unsigned char index = GetRenderIndex();
@@ -216,6 +217,7 @@ namespace Font
 		__asm
 		{
 			pop retaddr;
+
 			movzx eax, word ptr[ebx];
 			mov cl, [esp + 0x10BC];
 			cmp ax, ' ';

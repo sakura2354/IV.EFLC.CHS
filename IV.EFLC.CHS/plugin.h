@@ -6,15 +6,15 @@ namespace plugin
 {
 	void Init(HMODULE);
 
-	enum class GameVersion
+	enum class eGameVersion
 	{
 		UNCHECKED,
 		IV_1_0_8_0,
 		EFLC_1_1_3_0,
-		UNK
+		UNKNOWN
 	};
 
-	GameVersion GetGameVersion();
+	eGameVersion GetGameVersion();
 
 	injector::auto_pointer AddressByVersion(unsigned int addressiv, unsigned int addresseflc = 0);
 };

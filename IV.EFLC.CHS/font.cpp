@@ -142,6 +142,7 @@ namespace Font
 
 	void PrintCHSChar(float posx, float posy, wchar_t character)
 	{
+#pragma message "Rewrite Print Function"
 		static const float fTextureResolution = 4096.0f;
 		static const float fTextureRowsCount = 102.4f;
 		static const float fTextureColumnsCount = 128.0f;
